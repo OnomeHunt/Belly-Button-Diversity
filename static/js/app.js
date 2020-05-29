@@ -6,15 +6,39 @@ const bio_data = d3.json(json_url);
 
 var data = bio_data;
 
+function InitDashboard() {
+    console.log("Initializing Dashboard");
+    var selector = d3.select("#selDataset");
 
-function DrawBubbleChart(sampleId) {
+    d3.json("samples.json").then((data) => {
+        console.log(data);
 
-    console.log(`Calling DrawBubbleChart ${sampleId}`);
+        var sampleNames = data.names;
+
+        sampleNames.forEach((instanceID) =>
+            selector.append("option")
+                .text(instanceID)
+                .property("value", instanceID));
+
+        var instanceID = sampleNames[0];
+
+        Bargraph(instanceID);
+        BubbleChart(instanceID);
+        Guage(instanceID);
+        ShowMetadata(instanceID);
+    });
+}
+
+InitDashboard();
+
+function BubbleChart(instanceID) {
+
+    console.log(`Calling BubbleChart ${instanceID}`);
  
 
     d3.json("samples.json").then((data) => {
         var samples = data.samples;
-        var resultArray = samples.filter(s => s.id == sampleId);
+        var resultArray = samples.filter(s => s.id == instanceID);
 
         var result = resultArray[0];
 
@@ -31,7 +55,8 @@ function DrawBubbleChart(sampleId) {
             mode: "markers",
             marker: {
                 size: sample_values.slice(0, 10).reverse(),
-                color: otu_ids.slice(0, 10).reverse()
+                 color: otu_ids.slice(0, 10).reverse()
+                
             },
             text: otu_labels.slice(0, 10).reverse()
         };
@@ -49,13 +74,13 @@ function DrawBubbleChart(sampleId) {
 
 }
 
-function DrawBargraph(sampleId) {
+function Bargraph(instanceID) {
 
-    console.log(`Calling DrawBargraph ${sampleId}`);
+    console.log(`Calling Bargraph ${instanceID}`);
 
     d3.json("samples.json").then((data) => {
         var samples = data.samples;
-        var resultArray = samples.filter(s => s.id == sampleId);
+        var resultArray = samples.filter(s => s.id == instanceID);
 
         var result = resultArray[0];
 
@@ -70,7 +95,10 @@ function DrawBargraph(sampleId) {
             y: yticks,
             type: "bar",
             text: otu_labels.slice(0, 10).reverse(),
-            orientation: "h"
+            orientation: "h",
+            marker: {
+                color: 'rgb(142,124,195,195,195,195,195,195,195,195)'
+              }
         };
 
         barArray = [barData];
@@ -78,6 +106,7 @@ function DrawBargraph(sampleId) {
         var barLayout = {
             title: "Top 10 Bacteria Cultures Found",
             margin: { t: 30, l: 150 }
+            
         };
 
         Plotly.newPlot("bar", barArray, barLayout);
@@ -87,13 +116,13 @@ function DrawBargraph(sampleId) {
 
 }
 
-function ShowMetadata(sampleId) {
+function ShowMetadata(instanceID) {
 
-    console.log(`Calling ShowMetadata ${sampleId}`);
+    console.log(`Calling ShowMetadata ${instanceID}`);
 
     d3.json("samples.json").then((data) => {
         var metadata = data.metadata;
-        var resultArray = metadata.filter(md => md.id == sampleId);
+        var resultArray = metadata.filter(md => md.id == instanceID);
         var result = resultArray[0];
 
         var PANEL = d3.select("#sample-metadata");
@@ -108,41 +137,17 @@ function ShowMetadata(sampleId) {
 
 }
 
-function DrawGauge(sampleId) {
-    console.log(`Calling DrawGuage ${sampleId}`);
+function Guage(instanceID) {
+    console.log(`Calling Guage ${instanceID}`);
 }
 
-function optionChanged(newSampleId) {
-    console.log(`User selected ${newSampleId}`);
+function optionChanged(newinstanceID) {
+    console.log(`User selected ${newinstanceID}`);
 
-    DrawBubbleChart(newSampleId);
-    DrawBargraph(newSampleId);
-    ShowMetadata(newSampleId);
-    DrawGauge(newSampleId);
+    BubbleChart(newinstanceID);
+    Bargraph(newinstanceID);
+    ShowMetadata(newinstanceID);
+    Guage(newinstanceID);
 }
 
 
-function InitDashboard() {
-    console.log("Initializing Dashboard");
-    var selector = d3.select("#selDataset");
-
-    d3.json("samples.json").then((data) => {
-        console.log(data);
-
-        var sampleNames = data.names;
-
-        sampleNames.forEach((sampleId) =>
-            selector.append("option")
-                .text(sampleId)
-                .property("value", sampleId));
-
-        var sampleId = sampleNames[0];
-
-        DrawBargraph(sampleId);
-        DrawBubbleChart(sampleId);
-        DrawGauge(sampleId);
-        ShowMetadata(sampleId);
-    });
-}
-
-InitDashboard();
